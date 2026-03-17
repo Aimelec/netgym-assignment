@@ -18,6 +18,9 @@ export interface Player {
   obp: number | null;
   slg: number | null;
   ops: number | null;
+  description: string | null;
+  descriptionStatus: string;
+  locallyModified: boolean;
 }
 
 export type PlayerSortField = "hits" | "homeRuns";
