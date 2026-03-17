@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { enqueueDescriptionJob } from "@/services/queue-service";
 import { startDescriptionWorker } from "@/workers/description-worker";
+import "../setup-db";
 
 const samplePlayer = {
   playerName: "Worker Test Player",
@@ -22,15 +23,6 @@ const samplePlayer = {
   slg: 0.5,
   ops: 0.88,
 };
-
-beforeEach(async () => {
-  await prisma.player.deleteMany();
-});
-
-afterAll(async () => {
-  await prisma.player.deleteMany();
-  await prisma.$disconnect();
-});
 
 describe("description worker", () => {
   it("processes a job and updates the player description", async () => {

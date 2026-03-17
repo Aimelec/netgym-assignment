@@ -25,7 +25,7 @@ export type UpdatePlayerInput = z.infer<typeof updatePlayerSchema>;
 
 export const getPlayersQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  pageSize: z.coerce.number().int().min(1).max(100).default(20),
-  sortBy: z.enum(["hits", "homeRuns"]).default("hits"),
-  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+  pageSize: z.coerce.number().int().min(1).max(100).default(10),
+  sortBy: z.enum(["playerName", "hits", "homeRuns"]).default("playerName"),
+  sortOrder: z.enum(["asc", "desc"]).default("asc"),
 });

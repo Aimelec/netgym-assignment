@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { syncPlayers } from "@/cron/sync-players";
+import "../setup-db";
 
 const fakePlayers = [
   {
@@ -45,15 +46,6 @@ const fakePlayers = [
 ];
 
 const fakeFetch = async () => fakePlayers;
-
-beforeEach(async () => {
-  await prisma.player.deleteMany();
-});
-
-afterAll(async () => {
-  await prisma.player.deleteMany();
-  await prisma.$disconnect();
-});
 
 describe("syncPlayers", () => {
   it("syncs players from the API into the database", async () => {

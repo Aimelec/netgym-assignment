@@ -23,7 +23,7 @@ export interface Player {
   locallyModified: boolean;
 }
 
-export type PlayerSortField = "hits" | "homeRuns";
+export type PlayerSortField = "playerName" | "hits" | "homeRuns";
 export type SortOrder = "asc" | "desc";
 
 export interface PaginatedResult<T> {

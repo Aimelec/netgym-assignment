@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { playerRepository } from "@/repositories/player-repository";
+import "../setup-db";
 
 const samplePlayer = {
   playerName: "Test Player",
@@ -29,15 +30,6 @@ const anotherPlayer = {
   hits: 200,
   homeRuns: 40,
 };
-
-beforeEach(async () => {
-  await prisma.player.deleteMany();
-});
-
-afterAll(async () => {
-  await prisma.player.deleteMany();
-  await prisma.$disconnect();
-});
 
 describe("playerRepository", () => {
   describe("upsertFromApi", () => {
