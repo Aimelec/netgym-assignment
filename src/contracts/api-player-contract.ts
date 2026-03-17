@@ -1,24 +1,28 @@
 import { z } from "zod";
 
+const numericField = z.union([z.number(), z.string()]).transform((val) =>
+  typeof val === "number" ? val : null,
+);
+
 export const apiPlayerSchema = z.object({
   "Player name": z.string(),
   position: z.string(),
-  Games: z.number(),
-  "At-bat": z.number(),
-  Runs: z.number(),
-  Hits: z.number(),
-  "Double (2B)": z.number(),
-  "third baseman": z.number(),
-  "home run": z.number(),
-  "run batted in": z.number(),
-  "a walk": z.number(),
-  Strikeouts: z.number(),
-  "stolen base": z.number(),
-  "Caught stealing": z.number(),
-  AVG: z.number(),
-  "On-base Percentage": z.number(),
-  "Slugging Percentage": z.number(),
-  "On-base Plus Slugging": z.number(),
+  Games: numericField,
+  "At-bat": numericField,
+  Runs: numericField,
+  Hits: numericField,
+  "Double (2B)": numericField,
+  "third baseman": numericField,
+  "home run": numericField,
+  "run batted in": numericField,
+  "a walk": numericField,
+  Strikeouts: numericField,
+  "stolen base": numericField,
+  "Caught stealing": numericField,
+  AVG: numericField,
+  "On-base Percentage": numericField,
+  "Slugging Percentage": numericField,
+  "On-base Plus Slugging": numericField,
 });
 
 export type ApiPlayer = z.infer<typeof apiPlayerSchema>;

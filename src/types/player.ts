@@ -2,22 +2,22 @@ export interface Player {
   id: string;
   playerName: string;
   position: string;
-  games: number;
-  atBat: number;
-  runs: number;
-  hits: number;
-  doubles: number;
-  triples: number;
-  homeRuns: number;
-  rbi: number;
-  walks: number;
-  strikeouts: number;
-  stolenBases: number;
-  caughtStealing: number;
-  battingAvg: number;
-  obp: number;
-  slg: number;
-  ops: number;
+  games: number | null;
+  atBat: number | null;
+  runs: number | null;
+  hits: number | null;
+  doubles: number | null;
+  triples: number | null;
+  homeRuns: number | null;
+  rbi: number | null;
+  walks: number | null;
+  strikeouts: number | null;
+  stolenBases: number | null;
+  caughtStealing: number | null;
+  battingAvg: number | null;
+  obp: number | null;
+  slg: number | null;
+  ops: number | null;
 }
 
 export type PlayerSortField = "hits" | "homeRuns";

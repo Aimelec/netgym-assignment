@@ -9,6 +9,9 @@
     "lint": "eslint",
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest --forceExit"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.79.0",
     "@mantine/core": "^8.3.18",

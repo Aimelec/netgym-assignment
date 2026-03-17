@@ -11,22 +11,22 @@ model Player {
   id              String   @id @default(uuid())
   playerName      String   @map("player_name")
   position        String
-  games           Int
-  atBat           Int      @map("at_bat")
-  runs            Int
-  hits            Int
-  doubles         Int
-  triples         Int
-  homeRuns        Int      @map("home_runs")
-  rbi             Int
-  walks           Int
-  strikeouts      Int
-  stolenBases     Int      @map("stolen_bases")
-  caughtStealing  Int      @map("caught_stealing")
-  battingAvg      Float    @map("batting_avg")
-  obp             Float
-  slg             Float
-  ops             Float
+  games           Int?
+  atBat           Int?     @map("at_bat")
+  runs            Int?
+  hits            Int?
+  doubles         Int?
+  triples         Int?
+  homeRuns        Int?     @map("home_runs")
+  rbi             Int?
+  walks           Int?
+  strikeouts      Int?
+  stolenBases     Int?     @map("stolen_bases")
+  caughtStealing  Int?     @map("caught_stealing")
+  battingAvg      Float?   @map("batting_avg")
+  obp             Float?
+  slg             Float?
+  ops             Float?
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
