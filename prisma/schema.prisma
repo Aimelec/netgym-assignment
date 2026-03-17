@@ -28,6 +28,8 @@ model Player {
   slg             Float?
   ops             Float?
 
+  locallyModified Boolean  @default(false) @map("locally_modified")
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

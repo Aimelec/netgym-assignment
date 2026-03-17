@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "NODE_OPTIONS='--experimental-vm-modules' jest --forceExit"
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest --forceExit",
+    "cron": "tsx -r tsconfig-paths/register cron.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
