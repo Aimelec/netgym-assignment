@@ -1,28 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { processDescriptionJob } from "@/workers/description-worker";
+import { makePlayer } from "../factories/player-factory";
 import "../setup-db";
 
-const samplePlayer = {
-  playerName: "Process Job Player",
-  position: "CF",
-  games: 100,
-  atBat: 400,
-  runs: 60,
-  hits: 120,
-  doubles: 25,
-  triples: 5,
-  homeRuns: 15,
-  rbi: 55,
-  walks: 40,
-  strikeouts: 80,
-  stolenBases: 10,
-  caughtStealing: 3,
-  battingAvg: 0.3,
-  obp: 0.38,
-  slg: 0.5,
-  ops: 0.88,
-  descriptionStatus: "pending",
-};
+const samplePlayer = { ...makePlayer({ playerName: "Process Job Player" }), descriptionStatus: "pending" };
 
 function makePublisherSpy() {
   const calls: { channel: string; message: string }[] = [];

@@ -1,14 +1,10 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { PATCH } from "@/app/api/players/[id]/route";
+import { makePlayer } from "../factories/player-factory";
 import "../setup-db";
 
-const samplePlayer = {
-  playerName: "Patch Test Player",
-  position: "1B",
-  hits: 100,
-  homeRuns: 30,
-};
+const samplePlayer = makePlayer({ playerName: "Patch Test Player", position: "1B" });
 
 function makePatchRequest(id: string, body: Record<string, unknown>) {
   const request = new NextRequest("http://localhost:3000/api/players/" + id, {

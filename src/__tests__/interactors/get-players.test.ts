@@ -1,14 +1,16 @@
 import { prisma } from "@/lib/prisma";
 import { getPlayers } from "@/interactors/get-players";
+import { makePlayer } from "../factories/player-factory";
 import "../setup-db";
 
 const makePlayers = (count: number) =>
-  Array.from({ length: count }, (_, i) => ({
-    playerName: `Player ${String(i + 1).padStart(3, "0")}`,
-    position: "CF",
-    hits: (count - i) * 10,
-    homeRuns: i * 5,
-  }));
+  Array.from({ length: count }, (_, i) =>
+    makePlayer({
+      playerName: `Player ${String(i + 1).padStart(3, "0")}`,
+      hits: (count - i) * 10,
+      homeRuns: i * 5,
+    }),
+  );
 
 describe("getPlayers", () => {
   it("returns paginated results with default params", async () => {

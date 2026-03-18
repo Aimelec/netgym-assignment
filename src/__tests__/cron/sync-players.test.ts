@@ -1,48 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { syncPlayers } from "@/cron/sync-players";
+import { makePlayer } from "../factories/player-factory";
 import "../setup-db";
 
 const fakePlayers = [
-  {
-    playerName: "Player A",
-    position: "CF",
-    games: 100,
-    atBat: 400,
-    runs: 60,
-    hits: 120,
-    doubles: 25,
-    triples: 5,
-    homeRuns: 15,
-    rbi: 55,
-    walks: 40,
-    strikeouts: 80,
-    stolenBases: 10,
-    caughtStealing: 3,
-    battingAvg: 0.3,
-    obp: 0.38,
-    slg: 0.5,
-    ops: 0.88,
-  },
-  {
-    playerName: "Player B",
-    position: "RF",
-    games: 200,
-    atBat: 800,
-    runs: 100,
-    hits: 250,
-    doubles: 50,
-    triples: 10,
-    homeRuns: 40,
-    rbi: 110,
-    walks: 60,
-    strikeouts: 150,
-    stolenBases: 5,
-    caughtStealing: 2,
-    battingAvg: 0.312,
-    obp: 0.4,
-    slg: 0.55,
-    ops: 0.95,
-  },
+  makePlayer({ playerName: "Player A" }),
+  makePlayer({ playerName: "Player B", position: "RF", hits: 250, homeRuns: 40 }),
 ];
 
 const fakeFetch = async () => fakePlayers;
@@ -107,26 +70,7 @@ describe("syncPlayers", () => {
 
     const fetchWithNewPlayer = async () => [
       ...fakePlayers,
-      {
-        playerName: "Player C",
-        position: "1B",
-        games: 50,
-        atBat: 200,
-        runs: 30,
-        hits: 60,
-        doubles: 10,
-        triples: 2,
-        homeRuns: 8,
-        rbi: 30,
-        walks: 20,
-        strikeouts: 40,
-        stolenBases: 1,
-        caughtStealing: 0,
-        battingAvg: 0.3,
-        obp: 0.37,
-        slg: 0.48,
-        ops: 0.85,
-      },
+      makePlayer({ playerName: "Player C", position: "1B", hits: 60, homeRuns: 8 }),
     ];
 
     const result = await syncPlayers(fetchWithNewPlayer, fakeEnqueue);

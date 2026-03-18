@@ -1,7 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import { render } from "./render";
 import { PlayersTable } from "@/components/players-table";
-import type { Player } from "@/types/player";
+import { makeDbPlayerList } from "../factories/player-factory";
 
 const pushMock = jest.fn();
 
@@ -10,31 +10,7 @@ jest.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-const makePlayers = (count: number): Player[] =>
-  Array.from({ length: count }, (_, i) => ({
-    id: `id-${i}`,
-    playerName: `Player ${String.fromCharCode(65 + i)}`,
-    position: "CF",
-    games: 100 + i,
-    atBat: 400,
-    runs: 60,
-    hits: 120 + i * 10,
-    doubles: 25,
-    triples: 5,
-    homeRuns: 15 + i * 5,
-    rbi: 55,
-    walks: 40,
-    strikeouts: 80,
-    stolenBases: 10,
-    caughtStealing: 3,
-    battingAvg: 0.3,
-    obp: 0.38,
-    slg: 0.5,
-    ops: 0.88,
-    description: null,
-    descriptionStatus: "pending",
-    locallyModified: false,
-  }));
+const makePlayers = (count: number) => makeDbPlayerList(count);
 
 const defaultProps = {
   players: makePlayers(3),

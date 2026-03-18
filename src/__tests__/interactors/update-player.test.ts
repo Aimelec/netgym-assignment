@@ -1,15 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { updatePlayer } from "@/interactors/update-player";
 import { NotFoundError } from "@/errors/app-error";
+import { makePlayer } from "../factories/player-factory";
 import "../setup-db";
 
-const samplePlayer = {
-  playerName: "Update Test Player",
-  position: "1B",
-  hits: 100,
-  homeRuns: 30,
-  battingAvg: 0.3,
-};
+const samplePlayer = makePlayer({ playerName: "Update Test Player", position: "1B" });
 
 const enqueuedIds: string[] = [];
 const fakeEnqueue = async (id: string) => { enqueuedIds.push(id); };

@@ -1,12 +1,13 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { GET } from "@/app/api/players/route";
+import { makePlayer } from "../factories/player-factory";
 import "../setup-db";
 
 const samplePlayers = [
-  { playerName: "Alpha Player", position: "CF", hits: 50, homeRuns: 10 },
-  { playerName: "Beta Player", position: "1B", hits: 150, homeRuns: 30 },
-  { playerName: "Charlie Player", position: "SS", hits: 100, homeRuns: 20 },
+  makePlayer({ playerName: "Alpha Player", hits: 50, homeRuns: 10 }),
+  makePlayer({ playerName: "Beta Player", position: "1B", hits: 150, homeRuns: 30 }),
+  makePlayer({ playerName: "Charlie Player", position: "SS", hits: 100, homeRuns: 20 }),
 ];
 
 function makeRequest(params: Record<string, string> = {}) {

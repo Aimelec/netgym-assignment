@@ -1,25 +1,7 @@
 import { apiPlayerSchema, mapApiPlayerToDb } from "@/contracts/api-player-contract";
+import { makeApiPlayer } from "../factories/player-factory";
 
-const validApiPlayer = {
-  "Player name": "B Bonds",
-  position: "LF",
-  Games: 2986,
-  "At-bat": 9847,
-  Runs: 2227,
-  Hits: 2935,
-  "Double (2B)": 601,
-  "third baseman": 77,
-  "home run": 762,
-  "run batted in": 1996,
-  "a walk": 2558,
-  Strikeouts: 1539,
-  "stolen base": 514,
-  "Caught stealing": 141,
-  AVG: 0.298,
-  "On-base Percentage": 0.444,
-  "Slugging Percentage": 0.607,
-  "On-base Plus Slugging": 1.051,
-};
+const validApiPlayer = makeApiPlayer();
 
 describe("apiPlayerSchema", () => {
   it("validates a correct API player object", () => {

@@ -1,35 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { playerRepository } from "@/repositories/player-repository";
+import { makePlayer } from "../factories/player-factory";
 import "../setup-db";
 
-const samplePlayer = {
-  playerName: "Test Player",
-  position: "CF",
-  games: 100,
-  atBat: 400,
-  runs: 60,
-  hits: 120,
-  doubles: 25,
-  triples: 5,
-  homeRuns: 15,
-  rbi: 55,
-  walks: 40,
-  strikeouts: 80,
-  stolenBases: 10,
-  caughtStealing: 3,
-  battingAvg: 0.3,
-  obp: 0.38,
-  slg: 0.5,
-  ops: 0.88,
-};
-
-const anotherPlayer = {
-  ...samplePlayer,
-  playerName: "Another Player",
-  position: "RF",
-  hits: 200,
-  homeRuns: 40,
-};
+const samplePlayer = makePlayer();
+const anotherPlayer = makePlayer({ playerName: "Another Player", position: "RF", hits: 200, homeRuns: 40 });
 
 describe("playerRepository", () => {
   describe("upsertFromApi", () => {

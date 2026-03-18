@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import IORedis from "ioredis";
 import { prisma } from "@/lib/prisma";
 import { GET } from "@/app/api/players/[id]/description/route";
+import { makePlayer } from "../factories/player-factory";
 import "../setup-db";
 
 function makeRequest(id: string) {
@@ -16,8 +17,7 @@ describe("GET /api/players/[id]/description", () => {
   it("returns cached description immediately without streaming", async () => {
     const player = await prisma.player.create({
       data: {
-        playerName: "Cached Player",
-        position: "1B",
+        ...makePlayer({ playerName: "Cached Player", position: "1B" }),
         description: "A solid first baseman with power.",
         descriptionStatus: "ready",
       },
@@ -37,11 +37,7 @@ describe("GET /api/players/[id]/description", () => {
 
   it("delivers description via Redis pub/sub when status is pending", async () => {
     const player = await prisma.player.create({
-      data: {
-        playerName: "Pending Player",
-        position: "CF",
-        descriptionStatus: "pending",
-      },
+      data: makePlayer({ playerName: "Pending Player" }),
     });
 
     const { request, params } = makeRequest(player.id);

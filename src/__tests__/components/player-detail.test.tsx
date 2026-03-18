@@ -1,12 +1,11 @@
 import { screen, within } from "@testing-library/react";
 import { render } from "./render";
 import { PlayerDetail } from "@/components/player-detail";
-import type { Player } from "@/types/player";
+import { makeDbPlayer } from "../factories/player-factory";
 
-const player: Player = {
+const player = makeDbPlayer({
   id: "abc-123",
   playerName: "Mike Trout",
-  position: "CF",
   games: 134,
   atBat: 470,
   runs: 101,
@@ -23,10 +22,7 @@ const player: Player = {
   obp: 0.46,
   slg: 0.628,
   ops: 1.088,
-  description: null,
-  descriptionStatus: "pending",
-  locallyModified: false,
-};
+});
 
 describe("PlayerDetail", () => {
   it("renders player name and position badge", () => {
@@ -65,12 +61,12 @@ describe("PlayerDetail", () => {
   });
 
   it("displays dash for null stats", () => {
-    const nullPlayer: Player = {
+    const nullPlayer = makeDbPlayer({
       ...player,
       games: null,
       hits: null,
       battingAvg: null,
-    };
+    });
 
     render(<PlayerDetail player={nullPlayer} />);
 

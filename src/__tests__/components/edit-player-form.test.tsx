@@ -2,7 +2,7 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { render } from "./render";
 import { EditPlayerForm } from "@/components/edit-player-form";
-import type { Player } from "@/types/player";
+import { makeDbPlayer } from "../factories/player-factory";
 
 const pushMock = jest.fn();
 const refreshMock = jest.fn();
@@ -14,10 +14,9 @@ jest.mock("next/navigation", () => ({
 const fetchMock = jest.fn();
 global.fetch = fetchMock;
 
-const player: Player = {
+const player = makeDbPlayer({
   id: "abc-123",
   playerName: "Mike Trout",
-  position: "CF",
   games: 134,
   atBat: 470,
   runs: 101,
@@ -34,10 +33,7 @@ const player: Player = {
   obp: 0.46,
   slg: 0.628,
   ops: 1.088,
-  description: null,
-  descriptionStatus: "pending",
-  locallyModified: false,
-};
+});
 
 beforeEach(() => {
   pushMock.mockClear();
