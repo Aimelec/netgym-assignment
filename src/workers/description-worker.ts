@@ -39,7 +39,7 @@ export function startDescriptionWorker(
         url: process.env.REDIS_URL!,
         maxRetriesPerRequest: null,
       },
-      concurrency: 3,
+      concurrency: 1,
     },
   );
 

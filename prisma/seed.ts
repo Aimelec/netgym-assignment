@@ -3,6 +3,7 @@ import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { apiPlayerSchema, mapApiPlayerToDb } from "../src/contracts/api-player-contract";
 import { z } from "zod";
+import { Queue } from "bullmq";
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
@@ -24,8 +25,12 @@ async function main() {
 
   console.log(`Fetched ${players.length} players. Upserting...`);
 
+  const queue = new Queue("description-generation", {
+    connection: { url: process.env.REDIS_URL!, maxRetriesPerRequest: null },
+  });
+
   for (const player of players) {
-    await prisma.player.upsert({
+    const upserted = await prisma.player.upsert({
       where: {
         playerName_position: {
           playerName: player.playerName,
@@ -35,9 +40,15 @@ async function main() {
       create: player,
       update: player,
     });
+
+    await queue.add("generate-description", { playerId: upserted.id }, {
+      attempts: 3,
+      backoff: { type: "exponential", delay: 5000 },
+    });
   }
 
-  console.log("Seed complete.");
+  await queue.close();
+  console.log("Seed complete. Description jobs enqueued.");
 }
 
 main()

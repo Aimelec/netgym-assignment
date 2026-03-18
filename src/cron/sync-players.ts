@@ -1,9 +1,14 @@
 import { fetchPlayersFromApi } from "@/services/baseball-api-service";
+import { enqueueDescriptionJob } from "@/services/queue-service";
 import { prisma } from "@/lib/prisma";
 
 type FetchFn = typeof fetchPlayersFromApi;
+type EnqueueFn = (playerId: string) => Promise<void>;
 
-export async function syncPlayers(fetchFn: FetchFn = fetchPlayersFromApi) {
+export async function syncPlayers(
+  fetchFn: FetchFn = fetchPlayersFromApi,
+  enqueueFn: EnqueueFn = enqueueDescriptionJob,
+) {
   console.log(`[CRON] Syncing players at ${new Date().toISOString()}`);
 
   const apiPlayers = await fetchFn();
@@ -25,7 +30,7 @@ export async function syncPlayers(fetchFn: FetchFn = fetchPlayersFromApi) {
       continue;
     }
 
-    await prisma.player.upsert({
+    const player = await prisma.player.upsert({
       where: {
         playerName_position: {
           playerName: playerData.playerName,
@@ -36,6 +41,7 @@ export async function syncPlayers(fetchFn: FetchFn = fetchPlayersFromApi) {
       update: playerData,
     });
 
+    await enqueueFn(player.id);
     synced++;
   }
 

@@ -1,3 +1,4 @@
+import "dotenv/config";
 import "tsconfig-paths/register";
 import { startDescriptionWorker } from "./src/workers/description-worker";
 

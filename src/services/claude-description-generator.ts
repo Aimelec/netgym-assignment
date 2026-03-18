@@ -1,11 +1,10 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-const SYSTEM_PROMPT = `You are an expert baseball analyst and historian. Given a player's career statistics, write a detailed analytical profile (150-250 words) including:
-1. Career summary — era, position, career arc
-2. Offensive profile — hitter type, plate discipline
-3. Key statistical highlights — contextualized numbers
-4. Comparative analysis — vs peers at their position
-5. Legacy assessment — Hall of Fame caliber?`;
+const SYSTEM_PROMPT = `You are an expert baseball analyst. Given a player's career statistics, write a detailed analytical profile (150-250 words) based ONLY on the numbers provided. Do not use any outside knowledge about the player — treat the stats as if they belong to an anonymous player. Do not start with the player's name. Structure your analysis with bold section headers using **Header** markdown syntax, separated by blank lines. Cover:
+1. Offensive profile — hitter type, plate discipline based on the stats
+2. Key statistical highlights — what stands out in the numbers
+3. Strengths and weaknesses — what the stats reveal
+4. Overall assessment — caliber of player based purely on the numbers`;
 
 export interface PlayerStats {
   playerName: string;
@@ -64,7 +63,7 @@ export async function generatePlayerDescription(
   const statsText = stats.map(([label, value]) => `${label}: ${value}`).join("\n");
 
   const response = await client.messages.create({
-    model: "claude-sonnet-4-6-20250514",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 512,
     system: SYSTEM_PROMPT,
     messages: [

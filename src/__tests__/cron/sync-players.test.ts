@@ -46,10 +46,14 @@ const fakePlayers = [
 ];
 
 const fakeFetch = async () => fakePlayers;
+const enqueuedIds: string[] = [];
+const fakeEnqueue = async (id: string) => { enqueuedIds.push(id); };
+
+beforeEach(() => { enqueuedIds.length = 0; });
 
 describe("syncPlayers", () => {
   it("syncs players from the API into the database", async () => {
-    const result = await syncPlayers(fakeFetch);
+    const result = await syncPlayers(fakeFetch, fakeEnqueue);
 
     expect(result.synced).toBe(2);
     expect(result.skipped).toBe(0);
@@ -65,7 +69,7 @@ describe("syncPlayers", () => {
   });
 
   it("skips players marked as locally modified", async () => {
-    await syncPlayers(fakeFetch);
+    await syncPlayers(fakeFetch, fakeEnqueue);
 
     const playerA = await prisma.player.findFirst({
       where: { playerName: "Player A" },
@@ -75,7 +79,7 @@ describe("syncPlayers", () => {
       data: { locallyModified: true, hits: 9999 },
     });
 
-    const result = await syncPlayers(fakeFetch);
+    const result = await syncPlayers(fakeFetch, fakeEnqueue);
 
     expect(result.synced).toBe(1);
     expect(result.skipped).toBe(1);
@@ -88,10 +92,10 @@ describe("syncPlayers", () => {
   });
 
   it("is idempotent — running twice produces the same count", async () => {
-    await syncPlayers(fakeFetch);
+    await syncPlayers(fakeFetch, fakeEnqueue);
     const countAfterFirst = await prisma.player.count();
 
-    await syncPlayers(fakeFetch);
+    await syncPlayers(fakeFetch, fakeEnqueue);
     const countAfterSecond = await prisma.player.count();
 
     expect(countAfterFirst).toBe(2);
@@ -99,7 +103,7 @@ describe("syncPlayers", () => {
   });
 
   it("creates new players that appear in the API", async () => {
-    await syncPlayers(fakeFetch);
+    await syncPlayers(fakeFetch, fakeEnqueue);
 
     const fetchWithNewPlayer = async () => [
       ...fakePlayers,
@@ -125,7 +129,7 @@ describe("syncPlayers", () => {
       },
     ];
 
-    const result = await syncPlayers(fetchWithNewPlayer);
+    const result = await syncPlayers(fetchWithNewPlayer, fakeEnqueue);
 
     expect(result.synced).toBe(3);
     const count = await prisma.player.count();
