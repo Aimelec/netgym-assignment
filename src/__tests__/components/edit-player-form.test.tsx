@@ -1,5 +1,6 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { notifications } from "@mantine/notifications";
 import { render } from "./render";
 import { EditPlayerForm } from "@/components/edit-player-form";
 import { makeDbPlayer } from "../factories/player-factory";
@@ -39,6 +40,7 @@ beforeEach(() => {
   pushMock.mockClear();
   refreshMock.mockClear();
   fetchMock.mockClear();
+  notifications.clean();
 });
 
 describe("EditPlayerForm", () => {
@@ -91,6 +93,10 @@ describe("EditPlayerForm", () => {
     await waitFor(() => {
       expect(pushMock).toHaveBeenCalledWith("/players/abc-123");
     });
+
+    const notificationContainer = document.querySelector(".mantine-Notification-root")!;
+    expect(within(notificationContainer as HTMLElement).getByText("Player updated")).toBeInTheDocument();
+    expect(within(notificationContainer as HTMLElement).getByText("Mike Trout was updated successfully")).toBeInTheDocument();
   });
 
   it("displays error message on failed submission", async () => {
@@ -105,7 +111,9 @@ describe("EditPlayerForm", () => {
     await user.click(screen.getByRole("button", { name: "Save Changes" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Player not found")).toBeInTheDocument();
+      const notificationContainer = document.querySelector(".mantine-Notification-root")!;
+      expect(within(notificationContainer as HTMLElement).getByText("Update failed")).toBeInTheDocument();
+      expect(within(notificationContainer as HTMLElement).getByText("Player not found")).toBeInTheDocument();
     });
 
     expect(pushMock).not.toHaveBeenCalled();
