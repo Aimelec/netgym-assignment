@@ -38,9 +38,14 @@ export function PlayerDetail({ player }: Props) {
             {player.position}
           </Badge>
         </Group>
-        <Anchor href="/players" size="sm">
-          Back to players
-        </Anchor>
+        <Group gap="md">
+          <Anchor href={`/players/${player.id}/edit`} size="sm">
+            Edit
+          </Anchor>
+          <Anchor href="/players" size="sm">
+            Back to players
+          </Anchor>
+        </Group>
       </Group>
 
       <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }}>
