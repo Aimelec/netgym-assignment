@@ -12,39 +12,37 @@ export async function syncPlayers(
   console.log(`[CRON] Syncing players at ${new Date().toISOString()}`);
 
   const apiPlayers = await fetchFn();
-  let synced = 0;
-  let skipped = 0;
 
-  for (const playerData of apiPlayers) {
-    const existing = await prisma.player.findUnique({
-      where: {
-        playerName_position: {
-          playerName: playerData.playerName,
-          position: playerData.position,
+  const modifiedPlayers = await prisma.player.findMany({
+    where: { locallyModified: true },
+    select: { playerName: true, position: true },
+  });
+  const modifiedKeys = new Set(
+    modifiedPlayers.map((p) => `${p.playerName}::${p.position}`),
+  );
+
+  const toSync = apiPlayers.filter(
+    (p) => !modifiedKeys.has(`${p.playerName}::${p.position}`),
+  );
+  const skipped = apiPlayers.length - toSync.length;
+
+  const upserted = await prisma.$transaction(
+    toSync.map((playerData) =>
+      prisma.player.upsert({
+        where: {
+          playerName_position: {
+            playerName: playerData.playerName,
+            position: playerData.position,
+          },
         },
-      },
-    });
+        create: playerData,
+        update: playerData,
+      }),
+    ),
+  );
 
-    if (existing?.locallyModified) {
-      skipped++;
-      continue;
-    }
+  await Promise.all(upserted.map((player) => enqueueFn(player.id)));
 
-    const player = await prisma.player.upsert({
-      where: {
-        playerName_position: {
-          playerName: playerData.playerName,
-          position: playerData.position,
-        },
-      },
-      create: playerData,
-      update: playerData,
-    });
-
-    await enqueueFn(player.id);
-    synced++;
-  }
-
-  console.log(`[CRON] Synced ${synced}, skipped ${skipped} locally modified`);
-  return { synced, skipped };
+  console.log(`[CRON] Synced ${upserted.length}, skipped ${skipped} locally modified`);
+  return { synced: upserted.length, skipped };
 }

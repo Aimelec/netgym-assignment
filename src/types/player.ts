@@ -1,3 +1,11 @@
+export const DescriptionStatus = {
+  PENDING: "pending",
+  READY: "ready",
+  FAILED: "failed",
+} as const;
+
+export type DescriptionStatus = (typeof DescriptionStatus)[keyof typeof DescriptionStatus];
+
 export interface Player {
   id: string;
   playerName: string;

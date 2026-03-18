@@ -1,8 +1,9 @@
 "use client";
 
-import { Card, Text, Loader, Group, Stack } from "@mantine/core";
+import { Card, Text, Loader, Group, Stack, Alert } from "@mantine/core";
 import { useDescriptionStream } from "@/hooks/use-description-stream";
 import { renderMarkdown } from "@/utils/render-markdown";
+import { DescriptionStatus as Status } from "@/types/player";
 
 interface Props {
   playerId: string;
@@ -25,8 +26,13 @@ export function DescriptionStatus({
       <Text fw={600} mb="sm">
         Description (powered by Claude)
       </Text>
-      {status === "ready" && description ? (
+      {status === Status.READY && description ? (
         <Stack gap="xs">{renderMarkdown(description)}</Stack>
+      ) : status === Status.FAILED ? (
+        <Alert color="red" variant="light">
+          Failed to generate description. Try editing the player to trigger a
+          new generation.
+        </Alert>
       ) : (
         <Group gap="xs">
           <Loader size="xs" />

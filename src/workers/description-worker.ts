@@ -1,6 +1,7 @@
 import { Worker, Job } from "bullmq";
 import { prisma } from "@/lib/prisma";
 import { generatePlayerDescription, PlayerStats } from "@/services/claude-description-generator";
+import { DescriptionStatus } from "@/types/player";
 import IORedis from "ioredis";
 
 type GenerateFn = (player: PlayerStats) => Promise<string>;
@@ -23,12 +24,12 @@ export async function processDescriptionJob(
 
   await prisma.player.update({
     where: { id: playerId },
-    data: { description, descriptionStatus: "ready" },
+    data: { description, descriptionStatus: DescriptionStatus.READY },
   });
 
   await publisher.publish(
     `player:${playerId}:description`,
-    JSON.stringify({ status: "ready", description }),
+    JSON.stringify({ status: DescriptionStatus.READY, description }),
   );
 
   console.log(`[Worker] Description ready for ${player.playerName}`);
@@ -53,8 +54,24 @@ export function startDescriptionWorker(
     },
   );
 
-  worker.on("failed", (job, err) => {
+  worker.on("failed", async (job, err) => {
     console.error(`[Worker] Job ${job?.id} failed:`, err.message);
+
+    if (job && job.attemptsMade >= (job.opts.attempts ?? 1)) {
+      const { playerId } = job.data;
+      const player = await prisma.player.findUnique({ where: { id: playerId } });
+      if (!player) return;
+
+      await prisma.player.update({
+        where: { id: playerId },
+        data: { descriptionStatus: DescriptionStatus.FAILED },
+      });
+      await publisher.publish(
+        `player:${playerId}:description`,
+        JSON.stringify({ status: DescriptionStatus.FAILED }),
+      );
+      console.error(`[Worker] All retries exhausted for player ${playerId}`);
+    }
   });
 
   return { worker, publisher };

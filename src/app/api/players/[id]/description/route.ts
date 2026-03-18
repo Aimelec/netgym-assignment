@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import IORedis from "ioredis";
 import { prisma } from "@/lib/prisma";
+import { DescriptionStatus } from "@/types/player";
 
 const SSE_HEADERS = {
   "Content-Type": "text/event-stream",
@@ -14,19 +15,16 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const player = await prisma.player.findUnique({ where: { id } });
-  if (player?.descriptionStatus === "ready" && player.description) {
-    const body = new TextEncoder().encode(
-      `data: ${JSON.stringify({ status: "ready", description: player.description })}\n\n`,
-    );
-    return new Response(body, { headers: SSE_HEADERS });
-  }
-
   const stream = new ReadableStream({
     async start(controller) {
       const subscriber = new IORedis(process.env.REDIS_URL!);
       const channel = `player:${id}:description`;
       let closed = false;
+
+      function send(data: string) {
+        controller.enqueue(new TextEncoder().encode(`data: ${data}\n\n`));
+        cleanup();
+      }
 
       function cleanup() {
         if (closed) return;
@@ -39,9 +37,18 @@ export async function GET(
       await subscriber.subscribe(channel);
 
       subscriber.on("message", (_ch: string, message: string) => {
-        controller.enqueue(new TextEncoder().encode(`data: ${message}\n\n`));
-        cleanup();
+        send(message);
       });
+
+      const player = await prisma.player.findUnique({ where: { id } });
+      if (player?.descriptionStatus === DescriptionStatus.READY && player.description) {
+        send(JSON.stringify({ status: DescriptionStatus.READY, description: player.description }));
+        return;
+      }
+      if (player?.descriptionStatus === DescriptionStatus.FAILED) {
+        send(JSON.stringify({ status: DescriptionStatus.FAILED }));
+        return;
+      }
 
       request.signal.addEventListener("abort", cleanup);
 

@@ -2,6 +2,7 @@ import { playerRepository } from "@/repositories/player-repository";
 import { updatePlayerSchema } from "@/contracts/player-contract";
 import { enqueueDescriptionJob } from "@/services/queue-service";
 import { NotFoundError } from "@/errors/app-error";
+import { DescriptionStatus } from "@/types/player";
 
 export async function updatePlayer(
   id: string,
@@ -17,7 +18,7 @@ export async function updatePlayer(
     ...validated,
     locallyModified: true,
     description: null,
-    descriptionStatus: "pending",
+    descriptionStatus: DescriptionStatus.PENDING,
   });
 
   await enqueueFn(id);

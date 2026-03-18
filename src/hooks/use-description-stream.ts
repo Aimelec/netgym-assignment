@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { DescriptionStatus } from "@/types/player";
 
 interface DescriptionState {
   description: string | null;
@@ -17,7 +18,8 @@ export function useDescriptionStream(
   });
 
   useEffect(() => {
-    if (initial.status === "ready" && initial.description) return;
+    if (initial.status === DescriptionStatus.READY && initial.description) return;
+    if (initial.status === DescriptionStatus.FAILED) return;
 
     const eventSource = new EventSource(
       `/api/players/${playerId}/description`,

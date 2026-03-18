@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { enqueueDescriptionJob } from "@/services/queue-service";
+import { descriptionQueue, enqueueDescriptionJob } from "@/services/queue-service";
 import { startDescriptionWorker } from "@/workers/description-worker";
 import "../setup-db";
 
@@ -48,4 +48,9 @@ describe("description worker", () => {
     await worker.close();
     publisher.disconnect();
   }, 15000);
+});
+
+afterAll(async () => {
+  await descriptionQueue.drain();
+  await descriptionQueue.close();
 });
