@@ -1,4 +1,4 @@
-import { Container, Title } from "@mantine/core";
+import { Container } from "@mantine/core";
 import { getPlayers } from "@/interactors/get-players";
 import { PlayersTable } from "@/components/players-table";
 import { flattenSearchParams } from "@/utils/search-params";
@@ -13,9 +13,6 @@ export default async function PlayersPage({ searchParams }: Props) {
 
   return (
     <Container size="xl" py="xl">
-      <Title order={1} mb="lg">
-        Baseball Players
-      </Title>
       <PlayersTable
         players={result.data}
         total={result.total}

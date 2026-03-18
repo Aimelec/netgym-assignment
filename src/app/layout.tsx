@@ -1,5 +1,6 @@
 import "@mantine/core/styles.css";
 import { ColorSchemeScript, MantineProvider } from "@mantine/core";
+import { AppLayout } from "@/components/app-shell";
 
 export const metadata = {
   title: "Baseball Players",
@@ -13,7 +14,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ColorSchemeScript />
       </head>
       <body>
-        <MantineProvider>{children}</MantineProvider>
+        <MantineProvider>
+          <AppLayout>{children}</AppLayout>
+        </MantineProvider>
       </body>
     </html>
   );
