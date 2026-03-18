@@ -3,6 +3,7 @@
 import {
   TextInput,
   NumberInput,
+  Select,
   Button,
   SimpleGrid,
   Group,
@@ -11,6 +12,7 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useEditPlayer } from "@/hooks/use-edit-player";
+import { POSITIONS } from "@/types/player";
 import type { Player } from "@/types/player";
 
 interface Props {
@@ -53,7 +55,7 @@ export function EditPlayerForm({ player }: Props) {
 
       <SimpleGrid cols={{ base: 1, sm: 2 }} mb="md">
         <TextInput label="Name" required {...form.getInputProps("playerName")} />
-        <TextInput label="Position" required {...form.getInputProps("position")} />
+        <Select label="Position" required data={[...POSITIONS]} allowDeselect={false} {...form.getInputProps("position")} />
       </SimpleGrid>
 
       <SimpleGrid cols={{ base: 2, sm: 3, md: 4 }} mb="md">

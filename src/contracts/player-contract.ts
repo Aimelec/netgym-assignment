@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { POSITIONS } from "@/types/player";
 
 export const updatePlayerSchema = z.object({
   playerName: z.string().min(1).optional(),
-  position: z.string().min(1).optional(),
+  position: z.enum(POSITIONS as [string, ...string[]]).optional(),
   games: z.number().int().min(0).optional(),
   atBat: z.number().int().min(0).optional(),
   runs: z.number().int().min(0).optional(),

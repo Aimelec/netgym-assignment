@@ -6,6 +6,23 @@ export const DescriptionStatus = {
 
 export type DescriptionStatus = (typeof DescriptionStatus)[keyof typeof DescriptionStatus];
 
+export const Position = {
+  FIRST_BASE: "1B",
+  SECOND_BASE: "2B",
+  THIRD_BASE: "3B",
+  CATCHER: "C",
+  CENTER_FIELD: "CF",
+  DESIGNATED_HITTER: "DH",
+  LEFT_FIELD: "LF",
+  OUTFIELD: "OF",
+  RIGHT_FIELD: "RF",
+  SHORTSTOP: "SS",
+} as const;
+
+export type Position = (typeof Position)[keyof typeof Position];
+
+export const POSITIONS = Object.values(Position);
+
 export interface Player {
   id: string;
   playerName: string;
