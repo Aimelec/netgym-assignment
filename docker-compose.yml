@@ -17,6 +17,35 @@ services:
     volumes:
       - redisdata:/data
 
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.services
+    command: npx tsx -r tsconfig-paths/register worker.ts
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/baseball_dev
+      REDIS_URL: redis://redis:6379
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  cron:
+    build:
+      context: .
+      dockerfile: Dockerfile.services
+    command: npx tsx -r tsconfig-paths/register cron.ts
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/baseball_dev
+      REDIS_URL: redis://redis:6379
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      BASEBALL_API_URL: ${BASEBALL_API_URL}
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
 volumes:
   pgdata:
   redisdata:

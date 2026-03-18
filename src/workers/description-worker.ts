@@ -5,6 +5,35 @@ import IORedis from "ioredis";
 
 type GenerateFn = (player: PlayerStats) => Promise<string>;
 
+interface Publisher {
+  publish(channel: string, message: string): Promise<number>;
+}
+
+export async function processDescriptionJob(
+  playerId: string,
+  generateFn: GenerateFn,
+  publisher: Publisher,
+) {
+  console.log(`[Worker] Generating description for player ${playerId}`);
+
+  const player = await prisma.player.findUnique({ where: { id: playerId } });
+  if (!player) throw new Error(`Player ${playerId} not found`);
+
+  const description = await generateFn(player);
+
+  await prisma.player.update({
+    where: { id: playerId },
+    data: { description, descriptionStatus: "ready" },
+  });
+
+  await publisher.publish(
+    `player:${playerId}:description`,
+    JSON.stringify({ status: "ready", description }),
+  );
+
+  console.log(`[Worker] Description ready for ${player.playerName}`);
+}
+
 export function startDescriptionWorker(
   generateFn: GenerateFn = generatePlayerDescription,
 ) {
@@ -13,26 +42,7 @@ export function startDescriptionWorker(
   const worker = new Worker(
     "description-generation",
     async (job: Job<{ playerId: string }>) => {
-      const { playerId } = job.data;
-      console.log(`[Worker] Generating description for player ${playerId}`);
-
-      const player = await prisma.player.findUnique({ where: { id: playerId } });
-      if (!player) throw new Error(`Player ${playerId} not found`);
-
-      const description = await generateFn(player);
-
-      await prisma.player.update({
-        where: { id: playerId },
-        data: { description, descriptionStatus: "ready" },
-      });
-
-      // Notify SSE listeners via Redis pub/sub
-      await publisher.publish(
-        `player:${playerId}:description`,
-        JSON.stringify({ status: "ready", description }),
-      );
-
-      console.log(`[Worker] Description ready for ${player.playerName}`);
+      await processDescriptionJob(job.data.playerId, generateFn, publisher);
     },
     {
       connection: {
