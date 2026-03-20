@@ -47,7 +47,7 @@ export const playerRepository = {
     const { playerName, position, ...stats } = playerData;
 
     return prisma.player.upsert({
-      where: { playerName_position: { playerName, position } },
+      where: { playerName },
       create: { playerName, position, ...stats } as Parameters<typeof prisma.player.create>[0]["data"],
       update: stats as Parameters<typeof prisma.player.update>[0]["data"],
     });

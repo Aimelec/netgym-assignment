@@ -15,26 +15,21 @@ export async function syncPlayers(
 
   const modifiedPlayers = await prisma.player.findMany({
     where: { locallyModified: true },
-    select: { playerName: true, position: true },
+    select: { playerName: true },
   });
-  const modifiedKeys = new Set(
-    modifiedPlayers.map((p) => `${p.playerName}::${p.position}`),
+  const modifiedNames = new Set(
+    modifiedPlayers.map((p) => p.playerName),
   );
 
   const toSync = apiPlayers.filter(
-    (p) => !modifiedKeys.has(`${p.playerName}::${p.position}`),
+    (p) => !modifiedNames.has(p.playerName),
   );
   const skipped = apiPlayers.length - toSync.length;
 
   const upserted = await prisma.$transaction(
     toSync.map((playerData) =>
       prisma.player.upsert({
-        where: {
-          playerName_position: {
-            playerName: playerData.playerName,
-            position: playerData.position,
-          },
-        },
+        where: { playerName: playerData.playerName },
         create: playerData,
         update: playerData,
       }),
