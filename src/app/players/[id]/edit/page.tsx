@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { Container, Title } from "@mantine/core";
-import { prisma } from "@/lib/prisma";
+import { getPlayer } from "@/interactors/get-player";
 import { EditPlayerForm } from "@/components/edit-player-form";
+import { NotFoundError } from "@/errors/app-error";
 import type { Player } from "@/types/player";
 
 interface Props {
@@ -11,8 +12,13 @@ interface Props {
 export default async function EditPlayerPage({ params }: Props) {
   const { id } = await params;
 
-  const player = await prisma.player.findUnique({ where: { id } });
-  if (!player) notFound();
+  let player;
+  try {
+    player = await getPlayer(id);
+  } catch (error) {
+    if (error instanceof NotFoundError) notFound();
+    throw error;
+  }
 
   return (
     <Container size="xl" py="xl">
