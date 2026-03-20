@@ -43,7 +43,6 @@ describe("generatePlayerDescription", () => {
     const fakeClient = {
       messages: {
         create: async (params: { messages: { content: string }[] }) => {
-          // Verify the prompt contains N/A for null values
           const userMessage = params.messages[0].content;
           expect(userMessage).toContain("N/A");
           return {
