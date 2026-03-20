@@ -2,6 +2,7 @@ import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { apiPlayerSchema, mapApiPlayerToDb } from "../src/contracts/api-player-contract";
+import { hasStatsChanged } from "../src/utils/player-diff";
 import { z } from "zod";
 import { Queue } from "bullmq";
 
@@ -25,11 +26,21 @@ async function main() {
 
   console.log(`Fetched ${players.length} players. Upserting...`);
 
+  const existingPlayers = await prisma.player.findMany();
+  const existingByName = new Map(
+    existingPlayers.map((p) => [p.playerName, p]),
+  );
+
   const queue = new Queue("description-generation", {
     connection: { url: process.env.REDIS_URL!, maxRetriesPerRequest: null },
   });
 
+  let created = 0;
+  let updated = 0;
   for (const player of players) {
+    const existing = existingByName.get(player.playerName);
+    if (existing && !hasStatsChanged(existing, player)) continue;
+
     const upserted = await prisma.player.upsert({
       where: { playerName: player.playerName },
       create: player,
@@ -40,10 +51,13 @@ async function main() {
       attempts: 3,
       backoff: { type: "exponential", delay: 5000 },
     });
+
+    if (existing) updated++;
+    else created++;
   }
 
   await queue.close();
-  console.log("Seed complete. Description jobs enqueued.");
+  console.log(`Seed complete. Created ${created}, updated ${updated}, skipped ${players.length - created - updated} unchanged.`);
 }
 
 main()

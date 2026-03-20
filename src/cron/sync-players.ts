@@ -1,5 +1,6 @@
 import { fetchPlayersFromApi } from "@/services/baseball-api-service";
 import { enqueueDescriptionJob } from "@/services/queue-service";
+import { hasStatsChanged } from "@/utils/player-diff";
 import { prisma } from "@/lib/prisma";
 
 type FetchFn = typeof fetchPlayersFromApi;
@@ -13,31 +14,32 @@ export async function syncPlayers(
 
   const apiPlayers = await fetchFn();
 
-  const modifiedPlayers = await prisma.player.findMany({
-    where: { locallyModified: true },
-    select: { playerName: true },
-  });
-  const modifiedNames = new Set(
-    modifiedPlayers.map((p) => p.playerName),
+  const existingPlayers = await prisma.player.findMany();
+  const existingByName = new Map(
+    existingPlayers.map((p) => [p.playerName, p]),
   );
 
-  const toSync = apiPlayers.filter(
-    (p) => !modifiedNames.has(p.playerName),
-  );
+  const toSync = apiPlayers.filter((p) => {
+    const existing = existingByName.get(p.playerName);
+    if (existing?.locallyModified) return false;
+    if (!existing) return true;
+    return hasStatsChanged(existing, p);
+  });
+
   const skipped = apiPlayers.length - toSync.length;
 
   const upserted = await prisma.$transaction(
-    toSync.map((playerData) =>
+    toSync.map((p) =>
       prisma.player.upsert({
-        where: { playerName: playerData.playerName },
-        create: playerData,
-        update: playerData,
+        where: { playerName: p.playerName },
+        create: p,
+        update: p,
       }),
     ),
   );
 
   await Promise.all(upserted.map((player) => enqueueFn(player.id)));
 
-  console.log(`[CRON] Synced ${upserted.length}, skipped ${skipped} locally modified`);
+  console.log(`[CRON] Synced ${upserted.length}, skipped ${skipped} unchanged/modified`);
   return { synced: upserted.length, skipped };
 }

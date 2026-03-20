@@ -20,6 +20,7 @@ describe("syncPlayers", () => {
 
     expect(result.synced).toBe(2);
     expect(result.skipped).toBe(0);
+    expect(enqueuedIds).toHaveLength(2);
 
     const count = await prisma.player.count();
     expect(count).toBe(2);
@@ -41,11 +42,13 @@ describe("syncPlayers", () => {
       where: { id: playerA!.id },
       data: { locallyModified: true, hits: 9999 },
     });
+    enqueuedIds.length = 0;
 
     const result = await syncPlayers(fakeFetch, fakeEnqueue);
 
-    expect(result.synced).toBe(1);
-    expect(result.skipped).toBe(1);
+    expect(result.synced).toBe(0);
+    expect(result.skipped).toBe(2);
+    expect(enqueuedIds).toHaveLength(0);
 
     const afterSync = await prisma.player.findUnique({
       where: { id: playerA!.id },
@@ -54,19 +57,23 @@ describe("syncPlayers", () => {
     expect(afterSync!.locallyModified).toBe(true);
   });
 
-  it("is idempotent — running twice produces the same count", async () => {
+  it("skips upsert and description when data is unchanged", async () => {
     await syncPlayers(fakeFetch, fakeEnqueue);
-    const countAfterFirst = await prisma.player.count();
+    enqueuedIds.length = 0;
 
-    await syncPlayers(fakeFetch, fakeEnqueue);
-    const countAfterSecond = await prisma.player.count();
+    const result = await syncPlayers(fakeFetch, fakeEnqueue);
 
-    expect(countAfterFirst).toBe(2);
-    expect(countAfterSecond).toBe(2);
+    expect(result.synced).toBe(0);
+    expect(result.skipped).toBe(2);
+    expect(enqueuedIds).toHaveLength(0);
+
+    const count = await prisma.player.count();
+    expect(count).toBe(2);
   });
 
   it("creates new players that appear in the API", async () => {
     await syncPlayers(fakeFetch, fakeEnqueue);
+    enqueuedIds.length = 0;
 
     const fetchWithNewPlayer = async () => [
       ...fakePlayers,
@@ -75,7 +82,8 @@ describe("syncPlayers", () => {
 
     const result = await syncPlayers(fetchWithNewPlayer, fakeEnqueue);
 
-    expect(result.synced).toBe(3);
+    expect(result.synced).toBe(1);
+    expect(enqueuedIds).toHaveLength(1);
     const count = await prisma.player.count();
     expect(count).toBe(3);
   });
