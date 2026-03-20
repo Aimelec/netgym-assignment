@@ -40,6 +40,7 @@ async function main() {
   for (const player of players) {
     const key = `${player.playerName}::${player.position}`;
     const existing = existingByKey.get(key);
+    if (existing?.locallyModified) continue;
     if (existing && !hasStatsChanged(existing, player)) continue;
 
     const upserted = await prisma.player.upsert({
