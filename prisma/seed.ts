@@ -2,7 +2,7 @@ import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { apiPlayerSchema, mapApiPlayerToDb } from "../src/contracts/api-player-contract";
-import { hasStatsChanged } from "../src/utils/player-diff";
+import { hasStatsChanged, deduplicateByKey } from "../src/utils/player-diff";
 import { z } from "zod";
 import { Queue } from "bullmq";
 
@@ -22,13 +22,13 @@ async function main() {
 
   const raw = await response.json();
   const parsed = z.array(apiPlayerSchema).parse(raw);
-  const players = parsed.map(mapApiPlayerToDb);
+  const players = deduplicateByKey(parsed.map(mapApiPlayerToDb));
 
   console.log(`Fetched ${players.length} players. Upserting...`);
 
   const existingPlayers = await prisma.player.findMany();
-  const existingByName = new Map(
-    existingPlayers.map((p) => [p.playerName, p]),
+  const existingByKey = new Map(
+    existingPlayers.map((p) => [`${p.playerName}::${p.position}`, p]),
   );
 
   const queue = new Queue("description-generation", {
@@ -38,11 +38,12 @@ async function main() {
   let created = 0;
   let updated = 0;
   for (const player of players) {
-    const existing = existingByName.get(player.playerName);
+    const key = `${player.playerName}::${player.position}`;
+    const existing = existingByKey.get(key);
     if (existing && !hasStatsChanged(existing, player)) continue;
 
     const upserted = await prisma.player.upsert({
-      where: { playerName: player.playerName },
+      where: { playerName_position: { playerName: player.playerName, position: player.position } },
       create: player,
       update: player,
     });

@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "NODE_OPTIONS='--experimental-vm-modules' jest --forceExit",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest --forceExit --selectProjects backend --runInBand && jest --forceExit --selectProjects frontend",
+    "test:backend": "NODE_OPTIONS='--experimental-vm-modules' jest --forceExit --selectProjects backend --runInBand",
+    "test:frontend": "jest --forceExit --selectProjects frontend",
     "cron": "tsx -r tsconfig-paths/register cron.ts",
     "worker": "tsx -r tsconfig-paths/register worker.ts"
   },

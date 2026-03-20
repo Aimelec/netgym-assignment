@@ -71,6 +71,25 @@ describe("syncPlayers", () => {
     expect(count).toBe(2);
   });
 
+  it("updates stats and re-enqueues description when data changes", async () => {
+    await syncPlayers(fakeFetch, fakeEnqueue);
+    enqueuedIds.length = 0;
+
+    const updatedFetch = async () => [
+      makePlayer({ playerName: "Player A", hits: 999 }),
+      makePlayer({ playerName: "Player B", position: "RF", hits: 250, homeRuns: 40 }),
+    ];
+
+    const result = await syncPlayers(updatedFetch, fakeEnqueue);
+
+    expect(result.synced).toBe(1);
+    expect(result.skipped).toBe(1);
+    expect(enqueuedIds).toHaveLength(1);
+
+    const playerA = await prisma.player.findFirst({ where: { playerName: "Player A" } });
+    expect(playerA!.hits).toBe(999);
+  });
+
   it("creates new players that appear in the API", async () => {
     await syncPlayers(fakeFetch, fakeEnqueue);
     enqueuedIds.length = 0;

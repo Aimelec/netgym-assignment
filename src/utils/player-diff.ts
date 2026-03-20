@@ -10,3 +10,15 @@ export function hasStatsChanged(
 ): boolean {
   return STAT_FIELDS.some((field) => existing[field] !== incoming[field]);
 }
+
+export function deduplicateByKey<T extends { playerName: string; position: string }>(
+  players: T[],
+): T[] {
+  const seen = new Set<string>();
+  return players.filter((p) => {
+    const key = `${p.playerName}::${p.position}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}

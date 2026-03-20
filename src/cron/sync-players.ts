@@ -15,12 +15,12 @@ export async function syncPlayers(
   const apiPlayers = await fetchFn();
 
   const existingPlayers = await prisma.player.findMany();
-  const existingByName = new Map(
-    existingPlayers.map((p) => [p.playerName, p]),
+  const existingByKey = new Map(
+    existingPlayers.map((p) => [`${p.playerName}::${p.position}`, p]),
   );
 
   const toSync = apiPlayers.filter((p) => {
-    const existing = existingByName.get(p.playerName);
+    const existing = existingByKey.get(`${p.playerName}::${p.position}`);
     if (existing?.locallyModified) return false;
     if (!existing) return true;
     return hasStatsChanged(existing, p);
@@ -31,7 +31,7 @@ export async function syncPlayers(
   const upserted = await prisma.$transaction(
     toSync.map((p) =>
       prisma.player.upsert({
-        where: { playerName: p.playerName },
+        where: { playerName_position: { playerName: p.playerName, position: p.position } },
         create: p,
         update: p,
       }),
